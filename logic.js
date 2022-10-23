@@ -34,6 +34,8 @@ let textureAmp;
 let textureAmp1;
 let textureVel;
 let textureVel1;
+let textureAcc;
+let textureAcc1;
 let fb;
 let fb1;
 
@@ -98,15 +100,31 @@ function initGL() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+	textureAcc = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, textureAcc);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+	textureAcc1 = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, textureAcc1);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, width, height, 0, gl.RGBA, gl.FLOAT, null);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
 	fb = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureAmp, 0);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, textureVel, 0);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT2, gl.TEXTURE_2D, textureAcc, 0);
 
 	fb1 = gl.createFramebuffer();
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb1);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureAmp1, 0);
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, textureVel1, 0);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT2, gl.TEXTURE_2D, textureAcc1, 0);
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
 	gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
@@ -122,6 +140,7 @@ function initGL() {
 	gl.uniform2f(waveProgram.mouseUniform, 0, 0);
 	gl.uniform1i(waveProgram.textureUniform, 0);
 	gl.uniform1i(waveProgram.texture1Uniform, 1);
+	gl.uniform1i(waveProgram.texture2Uniform, 2);
 
 	window.requestAnimationFrame(update);
 }
@@ -141,7 +160,9 @@ function update() {
 	gl.bindTexture(gl.TEXTURE_2D, textureAmp);
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindTexture(gl.TEXTURE_2D, textureVel);
-	gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+	gl.activeTexture(gl.TEXTURE2);
+	gl.bindTexture(gl.TEXTURE_2D, textureAcc);
+	gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
@@ -149,14 +170,16 @@ function update() {
 	gl.bindTexture(gl.TEXTURE_2D, textureAmp1);
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindTexture(gl.TEXTURE_2D, textureVel1);
-	gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+	gl.activeTexture(gl.TEXTURE2);
+	gl.bindTexture(gl.TEXTURE_2D, textureAcc1);
+	gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1, gl.COLOR_ATTACHMENT2]);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 	
 	gl.useProgram(renderProgram.program);
 	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, textureVel);
+	gl.bindTexture(gl.TEXTURE_2D, textureAcc);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 	window.requestAnimationFrame(update);
 }

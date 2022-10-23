@@ -23,11 +23,13 @@ function makeWaveProgram(gl) {
 
 		uniform sampler2D u_texture0;
 		uniform sampler2D u_texture1;
+		uniform sampler2D u_texture2;
 
 		in vec2 v_texcoord;
 
 		layout(location = 0) out vec4 outAmp;
 		layout(location = 1) out vec4 outVel;
+		layout(location = 2) out vec4 outAcc;
 
 		float box(vec2 p, vec2 b) {
 			vec2 d = abs(p) - b;
@@ -46,20 +48,23 @@ function makeWaveProgram(gl) {
 			vec3 vel = texture(u_texture1, v_texcoord).rgb;
 			vec3 force = ampUp + ampRight + ampDown + ampLeft;
 			vec3 speed = vec3(1.0);
-			vec3 colorOffset = vec3(0.02, 0.0, -0.02);
-			if(length(uv) < 0.2) speed = vec3(3.0 / 4.0) + colorOffset;
+			vec3 colorOffset = vec3(0.02, 0.0, -0.03);
+			if(length(uv) < 0.1) speed = vec3(3.0 / 4.0) + colorOffset;
 			vel += (force * 0.25 - amp) * speed;
 			amp += vel;
 			float falloff = 1.0 - clamp(box(v_texcoord - 0.5, vec2(0.4)), 0.0, 1.0);
 			amp *= falloff;
 			vel *= falloff;
 			if(u_time < 2.0) {
-				if(box(uv - vec2(-0.4, 0.0), vec2(offset.x, 0.05)) < 0.01) {
-					amp += sin(u_time * 30.0) * 12.0;
+				if(box(uv - vec2(-0.35, 0.0), vec2(0.005, 0.13)) < 0.01) {
+					amp += sin(u_time * 40.0) * 1.0;
 				}
 			}
+			vec3 acc = texture(u_texture2, v_texcoord).rgb;
+			acc += abs(amp) * 0.001;
 			outAmp = vec4(amp, 1.0);
 			outVel = vec4(vel, 1.0);
+			outAcc = vec4(acc, 1.0);
 		}
 	`;
 	const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -81,6 +86,17 @@ function makeWaveProgram(gl) {
 	const mouseUniform = gl.getUniformLocation(program, 'u_mouse');
 	const textureUniform = gl.getUniformLocation(program, 'u_texture0');
 	const texture1Uniform = gl.getUniformLocation(program, 'u_texture1');
+	const texture2Uniform = gl.getUniformLocation(program, 'u_texture2');
 	const timeUniform = gl.getUniformLocation(program, 'u_time');
-	return {program, positionAttribute, texcoordAttribute, resolutionUniform, mouseUniform, textureUniform, texture1Uniform, timeUniform};
+	return {
+		program,
+		positionAttribute,
+		texcoordAttribute,
+		resolutionUniform,
+		mouseUniform,
+		textureUniform,
+		texture1Uniform,
+		texture2Uniform,
+		timeUniform
+	};
 }

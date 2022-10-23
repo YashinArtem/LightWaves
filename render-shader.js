@@ -28,7 +28,9 @@ function makeRenderProgram(gl) {
 			vec2 uv = v_texcoord - 0.5;
 			uv.x *= u_resolution.x / u_resolution.y;
 			vec3 col = texture(u_texture, v_texcoord).rgb;
-			if(length(uv) < 0.2) col += vec3(0.2, 0.25, 0.3);
+			col = clamp(col, 0.0, 1.0);
+			col *= col;
+			if(length(uv) < 0.1) col += vec3(0.2, 0.25, 0.3);
 			outCol = vec4(col, 1.0);
 		}
 	`;
